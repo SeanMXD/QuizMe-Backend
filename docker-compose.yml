@@ -1,0 +1,43 @@
+services:
+  quizme_backend:
+    networks:
+        - quizme_default
+    image: node
+    container_name: quizme_backend
+    restart: unless-stopped
+    ports:
+      - 2020:2020
+    command: bash -c "npm start || bash -c \"npm install --network-timeout=30000 && npm start\""
+    working_dir: /src
+    volumes:
+      - ./:/src
+      - quizme_node_modules:/src/node_modules
+    depends_on:
+      - "quizme_db"
+  quizme_db:
+    networks:
+      - quizme_default
+    image: mysql
+    container_name: quizme_db
+    restart: unless-stopped
+    volumes:
+      - quizme_db_data:/var/lib/mysql
+    env_file: ./db.env
+  quizme_pma:
+    networks:
+      - quizme_default
+    image: phpmyadmin
+    container_name: quizme_pma
+    links:
+      - quizme_db
+    env_file: ./phpmyadmin.env
+    restart: always
+    ports:
+      - 8090:80
+
+networks:
+  quizme_default:
+
+volumes:
+  quizme_node_modules:
+  quizme_db_data:
